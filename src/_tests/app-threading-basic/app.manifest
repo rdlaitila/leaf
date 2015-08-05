@@ -1,0 +1,31 @@
+{
+    /* UUID-v4 identifier */
+    "id":"343A68AD-13D0-4936-8CA1-02E15183F0EB",
+    
+    /* application name */
+    "name":"threading basic",
+    
+    /* version of this application */
+    "version":"0.1.0",
+    
+    /* supported runtimes */
+    "runtimes": 
+    {
+        "leaf" : ">=0.1.0",
+        "lua"  : "5.1"
+    },
+    
+    /* supported platforms */
+    "platforms":[
+        "windows-amd64",
+        "windows-i386",
+        "linux-amd64",
+        "linux-i386",
+        "linux-arm",
+        "darwin-amd64"
+    ],
+    
+    /* required parameters */
+    "parameters":{        
+    },
+}

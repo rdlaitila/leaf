@@ -59,8 +59,7 @@ function main
     #Pushed to $script: scope
     #
     $script:LIBRARY_PATH=(@(
-        "$script:BASE_PATH\src\lua.org\ftp\lua-5.1.5\src",
-        "$script:BASE_PATH\src\luajit.org\git\luajit-2.0\src"
+        "$script:BASE_PATH\src\_lua"
     )) -Join ":"
     
     #
@@ -73,13 +72,22 @@ function main
     #Cgo LDFlags used in go compilation of C programs
     #Pushed to $script: scope
     #
-    $script:CGO_LDFLAGS = ("$TMP_PATH\lua51.dll -Wl,-E -lm -L$BASE_PATH\src\lua.org\ftp\lua-5.1.5\src\") -Replace "\\", "/"
+    $script:CGO_LDFLAGS = (@(
+        #"$TMP_PATH\lua51.dll",
+        #"$TMP_PATH\lua52.dll",
+        #"$TMP_PATH\lua53.dll",
+        "-Wl,-E",
+        "-lm",
+        "-L$BASE_PATH\src\_lua\"
+    ) -Replace "\\","/") -Join " "
     
     #
     #Cgo CFLAGS used in go compilation of C programs
     #Pushed to $script: scope
     #
-    $script:CGO_CFLAGS = ("-I$BASE_PATH\src\lua.org\ftp\lua-5.1.5\src\") -Replace "\\","/"
+    $script:CGO_CFLAGS = (@(
+        "-I$BASE_PATH\src\_lua\"
+    ) -Replace "\\","/") -Join " "
     
     #output some of our constants for quick debugging
     log -msg "BASE_PATH: $script:BASE_PATH"
@@ -121,31 +129,71 @@ function build
     #Create our temporary working directory
     New-Item -Type Directory $script:TMP_PATH | Out-Null
     
-    #Move to lua sources and make
+    #Move to lua51 sources and make
     $env:LIBRARY_PATH=$LIBRARY_PATH
     $env:LD_LIBRARY_PATH=$LD_LIBRARY_PATH
-    cd "$script:SRC_PATH\lua.org\ftp\lua-5.1.5\src"
+    cd "$script:SRC_PATH\_lua\lua51\csrc"
     log -color "cyan" -msg "Invoking Command: $script:MAKE"
-    #& $script:MAKE clean
     & $script:MAKE mingw
     if( $LASTEXITCODE -ne 0){ log -level "ERROR" -msg "Error invoking lua MAKE command" -color "red"; exit 1 }
+    Copy-Item "$script:SRC_PATH\_lua\lua51\csrc\lua51.dll" $script:TMP_PATH | Out-Null
     
-    #Copy lib to tmp dir
-    Copy-Item "$script:SRC_PATH\lua.org\ftp\lua-5.1.5\src\lua51.dll" $script:TMP_PATH | Out-Null
-    Copy-Item "$script:SRC_PATH\lua.org\ftp\lua-5.1.5\src\lua.exe" $script:TMP_PATH | Out-Null
+    #Move to lua52 sources and make
+    $env:LIBRARY_PATH=$LIBRARY_PATH
+    $env:LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+    cd "$script:SRC_PATH\_lua\lua52\csrc"
+    log -color "cyan" -msg "Invoking Command: $script:MAKE"
+    & $script:MAKE mingw
+    if( $LASTEXITCODE -ne 0){ log -level "ERROR" -msg "Error invoking lua MAKE command" -color "red"; exit 1 }
+    Copy-Item "$script:SRC_PATH\_lua\lua52\csrc\lua52.dll" $script:TMP_PATH | Out-Null
+    
+    #Move to lua53 sources and make
+    $env:LIBRARY_PATH=$LIBRARY_PATH
+    $env:LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+    cd "$script:SRC_PATH\_lua\lua53\csrc"
+    log -color "cyan" -msg "Invoking Command: $script:MAKE"
+    & $script:MAKE mingw
+    if( $LASTEXITCODE -ne 0){ log -level "ERROR" -msg "Error invoking lua MAKE command" -color "red"; exit 1 }
+    Copy-Item "$script:SRC_PATH\_lua\lua53\csrc\lua53.dll" $script:TMP_PATH | Out-Null
     
     #Setup cgo cflags and ldflags and such
     $env:CGO_LDFLAGS=$script:CGO_LDFLAGS
     $env:CGO_CFLAGS=$script:CGO_CFLAGS
     
-    #Compile leap program
+    #Compile leaf programs
     cd $BASE_PATH
     $env:GOPATH="$script:BASE_PATH"
-    $cmd = "go";$args = @('build', 'src\_cmd\leap.go')
+    
+    #Compile leaf.exe
+    $cmd = "go";$args = @('build', 'src\_cmd\leaf.go')
     log -color "cyan" -msg "Invoking Command: $cmd $args"
     & $cmd $args
     if( $LASTEXITCODE -ne 0){ log -level "ERROR" -msg "Go Build Error" -color "red"; exit 1 }
-    Move-Item "$BASE_PATH\leap.exe" "$TMP_PATH"    
+    Move-Item "$BASE_PATH\leaf.exe" "$TMP_PATH"    
+    
+    #Compile leaf51.exe
+    $env:CGO_LDFLAGS="$script:TMP_PATH\lua51.dll $script:CGO_LDFLAGS" -replace "\\","/"
+    $cmd = "go";$args = @('build', 'src\_cmd\leaf51.go')
+    log -color "cyan" -msg "Invoking Command: $cmd $args"
+    & $cmd $args
+    if( $LASTEXITCODE -ne 0){ log -level "ERROR" -msg "Go Build Error" -color "red"; exit 1 }
+    Move-Item "$BASE_PATH\leaf51.exe" "$TMP_PATH"    
+    
+    #Compile leaf52.exe
+    $env:CGO_LDFLAGS="$script:TMP_PATH\lua52.dll $script:CGO_LDFLAGS" -replace "\\","/"
+    $cmd = "go";$args = @('build', 'src\_cmd\leaf52.go')
+    log -color "cyan" -msg "Invoking Command: $cmd $args"
+    & $cmd $args
+    if( $LASTEXITCODE -ne 0){ log -level "ERROR" -msg "Go Build Error" -color "red"; exit 1 }
+    Move-Item "$BASE_PATH\leaf52.exe" "$TMP_PATH"    
+    
+    #Compile leaf53.exe
+    $env:CGO_LDFLAGS="$script:TMP_PATH\lua53.dll $script:CGO_LDFLAGS" -replace "\\","/"
+    $cmd = "go";$args = @('build', 'src\_cmd\leaf53.go')
+    log -color "cyan" -msg "Invoking Command: $cmd $args"
+    & $cmd $args
+    if( $LASTEXITCODE -ne 0){ log -level "ERROR" -msg "Go Build Error" -color "red"; exit 1 }
+    Move-Item "$BASE_PATH\leaf53.exe" "$TMP_PATH"    
     
     #Update user with happiness
     log -color "green" -msg "SUCCESSFULLY BUILT PROJECT. AS FAR AS WE CAN TELL, NO ERRORS!"

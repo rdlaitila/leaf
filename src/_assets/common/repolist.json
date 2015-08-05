@@ -1,0 +1,11 @@
+{
+    /* List of URLs in order of priority to locate runtimes */
+    "runtimes":[
+        "https://leaftree.io/repo/runtime/"
+    ],
+    
+    /* List of URLs in order of priority to locate apps */
+    "apps":[
+        "https://leaftree.io/repo/app/"
+    ]
+}

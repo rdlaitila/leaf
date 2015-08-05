@@ -1,24 +1,23 @@
-local apprun = true
-local mu = leap.Mutex()
-local wg = leap.WaitGroup()
-local ct = 0
+local leaf = require('leaf')
+threads = {}
+
+local wg = leaf.WaitGroup()
+local mu = leaf.Mutex()
 
 wg:add()
-leap.Thread(function()
-    while true do end
+leaf.Thread(function()
+    while true do
+        print('thread1')
+    end
 end):run()
 
 wg:add()
-leap.Thread(function()
-    while true do end
-end):run()
-
-wg:add()
-leap.Thread(function()
-    for a=1, 1000 do
-        print(a)
+leaf.Thread(function()
+    while true do
+        print('thread2')
     end
 end):run()
 
 wg:wait()
-print(ct)
+
+print(count)
