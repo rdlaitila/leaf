@@ -1,66 +1,44 @@
 package leaf
 
 import(
-    "os"
     "log"
-    "path/filepath"
     "runtime"
-    
-    "_lua/lua51"
-    "_lua/lua52"
-    "_lua/lua53"
+
+    "_lua"
+    "_leaf/nsleaf"
 )
 
 type Runtime struct {
-    apppath string
-    luaver int
+    ls lua.State
 }
 
-func NewRuntime(apppath string, luaver int) *Runtime {
-    return &Runtime{
-        apppath: apppath,
-        luaver: luaver,
-    }
+func NewRuntime(ls lua.State) *Runtime {
+    return &Runtime{ls: ls,}
 }
 
-func (this *Runtime) Run() {
-    // Attempt to resolve the app directory
-    appdir, abserr := filepath.Abs(os.Args[1]); if abserr != nil {
-        log.Fatal("APP PATH:", abserr)
-    } 
-    log.Println("APP PATH:",appdir)
-    
-    // Set GOMAXPROCS
-    log.Println("MAX PROCS:", runtime.NumCPU())
+func (this *Runtime) Start(apppath string) {    
     runtime.GOMAXPROCS(runtime.NumCPU())
     
-    // Createstate and open libs
-    switch this.luaver {
-        case 51:
-            state := lua51.Newstate()
-        case 52: 
-            state := lua52.Newstate()
-        case 53:
-            state := lua53.Newstate()
-    }
-    state.Openlibs()
+    this.ls.Openlibs()
     
     // Push our pcall function
-    /*state.Pushfunction(func(ls lua.State) int {
-        log.Fatal("OOB ERROR: "+ls.Tostring(-1))
+    this.ls.Pushfunction(func(ls lua.State) int {
+        log.Println("ERROR: "+ls.Tostring(-1))
+        ls.Dostring(`print(debug.traceback())`)
+        log.Fatal("Exiting")
         return 0 
-    })*/
+    })
     
     // Load modules
-    //state.Pushmodule("leaf", nsleaf.NewModule().Loader)
+    this.ls.Pushmodule("leaf", nsleaf.NewModule().Loader)
     
     //Load in a lua chunk
-    if loadfileerr := state.Loadfile(appdir+"/main.lua"); loadfileerr != nil {
+    if loadfileerr := this.ls.Loadfile(apppath+"/main.lua"); loadfileerr != nil {
         log.Fatal("LOAD MAIN:",loadfileerr)
     }
     
     //Call the lua chunk
-    pcallerr := state.Pcall(0,0,1); if pcallerr != nil {
+    pcallerr := this.ls.Pcall(0,0,1); if pcallerr != nil {
         log.Fatal(pcallerr)        
     }
 }

@@ -101,6 +101,13 @@ func docallback(stateindex C.float, funcindex C.float) int {
     return fn(state)
 }
 
+//export panicf
+func panicf(err *C.char) C.int {
+    log.Println(C.GoString(err))
+    
+    return C.int(0)
+}
+
 // Yields a coroutine.
 //
 // This function should only be called as the return expression of a Go
@@ -702,8 +709,7 @@ func (this *State) Getglobal(name string) {
 
 // Pushes onto the stack the value t[k], where t is the value at the
 // given valid index.
-func (this *State) Getfield(index int, k string) {
-    log.Println(index, k)
+func (this *State) Getfield(index int, k string) {    
 	cs := C.CString(k)
 	defer C.free(unsafe.Pointer(cs))
 	C.lua_getfield(this.luastate, C.int(index), cs)

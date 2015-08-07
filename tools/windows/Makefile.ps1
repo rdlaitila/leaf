@@ -2,7 +2,8 @@
 param (
     [switch]$build,
     [switch]$clean,
-    [switch]$install
+    [switch]$install,
+    [switch]$test
 )
 
 #
@@ -102,17 +103,22 @@ function main
     #Begin checking supplied script switches
     if($build.IsPresent -eq $true)
     {
-        log -msg "Starting Project Build"
+        log -color "cyan" -msg "Starting Project Build"
         build
     }
     elseif($clean.IsPresent -eq $true)
     {
-        log -msg "Starting Project Clean"
+        log -color "cyan" -msg "Starting Project Clean"
         clean
     }
     elseif($install.IsPresent -eq $true)
     {
-        log -msg "Starting Project Install"
+        log -color "cyan" -msg "Starting Project Install"
+    }
+    elseif($test.IsPresent -eq $true)
+    {
+        log -color "cyan" -msg "Starting Project Tests"
+        test
     }
 }
 
@@ -218,6 +224,60 @@ function clean
 
 #
 #.SYNOPSIS
+#   test runs all available test applications
+#
+function test 
+{
+    #check for existance of leaf binaries
+    log -nnl -msg "Checking for leaf.exe..."
+    if(Test-Path "$script:TMP_PATH\leaf.exe"){ Write-Host "OK" }
+    else{ log -level "FAIL" -color "red" -msg "ensure you have run make";exit(1) }
+    
+    log -nnl -msg "Checking for leaf51.exe..."
+    if(Test-Path "$script:TMP_PATH\leaf51.exe"){ Write-Host "OK" }
+    else{ log -level "FAIL" -color "red" -msg "ensure you have run make";exit(1) }
+    
+    log -nnl -msg "Checking for leaf52.exe..."
+    if(Test-Path "$script:TMP_PATH\leaf51.exe"){ Write-Host "OK" }
+    else{ log -level "FAIL" -color "red" -msg "ensure you have run make";exit(1) }
+    
+    log -nnl -msg "Checking for leaf53.exe..."
+    if(Test-Path "$script:TMP_PATH\leaf51.exe"){ Write-Host "OK" }
+    else{ log -level "FAIL" -color "red" -msg "ensure you have run make";exit(1) }
+    
+    #Start leaf51.exe tests
+    log -msg "Starting leaf51.exe application tests:" -color "cyan"
+    gci "$script:SRC_PATH\_tests" | Foreach-Object{
+        $cmd = "$script:TMP_PATH\leaf51.exe";$args=@("$script:SRC_PATH\_tests\$($_.Name)")        
+        log -nnl -msg "running test application '$($_.Name)'..."        
+        & $cmd $args
+        if( $LASTEXITCODE -ne 0){ log -level "ERROR" -color "red";exit(1) }
+        else{ log -level "OK" -color "green" }
+    }
+    
+    #Start leaf52.exe tests
+    log -msg "Starting leaf52.exe application tests:" -color "cyan"
+    gci "$script:SRC_PATH\_tests" | Foreach-Object{
+        $cmd = "$script:TMP_PATH\leaf51.exe";$args=@("$script:SRC_PATH\_tests\$($_.Name)")        
+        log -nnl -msg "running test application '$($_.Name)'..."        
+        & $cmd $args
+        if( $LASTEXITCODE -ne 0){ log -level "ERROR" -color "red";exit(1) }
+        else{ log -level "OK" -color "green" }
+    }
+    
+    #Start leaf53.exe tests
+    log -msg "Starting leaf53.exe application tests:" -color "cyan"
+    gci "$script:SRC_PATH\_tests" | Foreach-Object{
+        $cmd = "$script:TMP_PATH\leaf51.exe";$args=@("$script:SRC_PATH\_tests\$($_.Name)")        
+        log -nnl -msg "running test application '$($_.Name)'..."        
+        & $cmd $args
+        if( $LASTEXITCODE -ne 0){ log -level "ERROR" -color "red";exit(1) }
+        else{ log -level "OK" -color "green" }
+    }
+}
+
+#
+#.SYNOPSIS
 #    log simply outputs a log line to shell
 #.PARAMETER level
 #    A string identifying the severity of the log entry. This can be any string value
@@ -228,6 +288,8 @@ function clean
 #.PARAMETER color
 #    The color to print the text with. Valid options are: "black","blue","cyan","darkblue","darkcyan",
 #    "darkgray","darkgreen","darkmagenta","darkred","darkyellow","gray", "green","magenta","red","white","yellow"
+#.PARAMETER nnl
+#   If we are to to not include a newline
 #.EXAMPLE
 #    log -level "INFO" -msg "Just Letting You Know Something"
 #
@@ -239,10 +301,19 @@ function log
         [ValidateSet("black","blue","cyan","darkblue","darkcyan","darkgray",
         "darkgreen","darkmagenta","darkred","darkyellow","gray",
         "green","magenta","red","white","yellow")]    
-        [string]$color = "white"
+        [string]$color = "white",
+        [switch]$nnl
     )    
     $lvlupper = $level.ToUpper()
-    Write-host "$lvlupper`: $msg" -foregroundcolor $color
+    
+    if( $nnl.IsPresent -eq $true )
+    {
+        Write-host -NoNewline "$lvlupper`: $msg" -foregroundcolor $color
+    }
+    else
+    {
+        Write-host "$lvlupper`: $msg" -foregroundcolor $color
+    }
 }
 
 #

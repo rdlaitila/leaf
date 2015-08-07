@@ -103,6 +103,15 @@ func docallback(stateindex C.float, funcindex C.float) int {
     return fn(state)
 }
 
+/*//export panicf
+func panicf() {
+    if this.Gettop() > 0 && this.Istring(-1) {
+        log.Println("PANIC: ", this.Tostring(-1))
+    } else {
+        log.Println("PANIC: ", "unable to determine reason for panic")
+    }
+}*/
+
 // Init configures internal values of the luajit.State object. This is called
 // automatically by luajit.Newstate() and should only be called if the State struct
 // was instantiated manually.

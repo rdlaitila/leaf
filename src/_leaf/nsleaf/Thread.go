@@ -64,20 +64,34 @@ func (this *Thread) run(ls lua.State) int {
         panic("Invalid Stack To Thread Run")
     }
     
+    //Get or create _threads global
+    ls.Getglobal("_threads")
+    if ls.Isnil(-1) {
+        ls.Pop(1)
+        ls.Newtable()
+        ls.Setglobal("_threads")
+    }
+    ls.Getglobal("_threads")
+    
+    //Create a new thread and push to global _threads var
     threadid := uuid.New()     
-    ls.Getglobal("threads")    
     thread := ls.Newthread()
     ls.Setfield(ls.Gettop()-1, threadid)  
     ls.Pop(1)    
+    
+    //Move the thread func to the new thread state
     ls.Getfield(-1, "func")
     thread.Xmove(ls, 1)    
     
     go func(thread lua.State) {
        if thread.Gettop() < 1 || thread.Gettop() > 1 {
             panic("Invalid Threadstate Stack")
-        }
-        //time.Sleep(time.Duration(rand.Int31n(100)) * time.Millisecond)
-        thread.Resume(0)                        
+        }        
+        _, err := thread.Resume(0)        
+        if err != nil {
+            thread.Pushstring(err.Error())
+            thread.Error()
+        }        
     }(thread)    
     
     return 0

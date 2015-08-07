@@ -5,6 +5,7 @@ ifdef SystemRoot
 	BUILD = powershell -ExecutionPolicy bypass -f .\tools\windows\Makefile.ps1 -build
 	CLEAN = powershell -ExecutionPolicy bypass -f .\tools\windows\Makefile.ps1 -clean
 	INSTALL = powershell -ExecutionPolicy bypass -f .\tools\windows\Makefile.ps1 -install
+    TEST = powershell -ExecutionPolicy bypass -f .\tools\windows\Makefile.ps1 -test
 else
 	ifeq ($(shell uname), Linux)
 		BUILD = python ./tools/linux/Makefile.py --build
@@ -27,8 +28,11 @@ clean:
 
 build:
 	$(BUILD)
+    
+test:
+	$(TEST)
 
 babies:
 	@echo "You will need more than a makefile for that..."
 
-.PHONY: all install clean build babies
+.PHONY: all install clean build test babies
