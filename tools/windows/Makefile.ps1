@@ -64,7 +64,8 @@ function main
     )) -Join ":"
     
     #
-    #Path to search for C source files. This is just a alias to LIBRARY_PATH should anything use this variable
+    #Path to search for C source files. This is just a alias to LIBRARY_PATH 
+    #should anything use this variable
     #Pushes to $script: scope
     #
     $script:LD_LIBRARY_PATH=$script:LIBRARY_PATH

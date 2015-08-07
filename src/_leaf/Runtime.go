@@ -6,6 +6,7 @@ import(
 
     "_lua"
     "_leaf/nsleaf"
+    "_leaf/nsruntime"
 )
 
 type Runtime struct {
@@ -31,6 +32,7 @@ func (this *Runtime) Start(apppath string) {
     
     // Load modules
     this.ls.Pushmodule("leaf", nsleaf.NewModule().Loader)
+    this.ls.Pushmodule("leaf.runtime", nsruntime.NewModule().Loader)
     
     //Load in a lua chunk
     if loadfileerr := this.ls.Loadfile(apppath+"/main.lua"); loadfileerr != nil {
