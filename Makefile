@@ -5,12 +5,13 @@ ifdef SystemRoot
 	BUILD = powershell -ExecutionPolicy bypass -f .\tools\windows\Makefile.ps1 -build
 	CLEAN = powershell -ExecutionPolicy bypass -f .\tools\windows\Makefile.ps1 -clean
 	INSTALL = powershell -ExecutionPolicy bypass -f .\tools\windows\Makefile.ps1 -install
-    TEST = powershell -ExecutionPolicy bypass -f .\tools\windows\Makefile.ps1 -test
+	TEST = powershell -ExecutionPolicy bypass -f .\tools\windows\Makefile.ps1 -test
 else
 	ifeq ($(shell uname), Linux)
 		BUILD = python ./tools/linux/Makefile.py --build
 		CLEAN = python ./tools/linux/Makefile.py --clean
-		INSTALL = python./tools/linux/Makefile.py --install
+		INSTALL = python ./tools/linux/Makefile.py --install
+		TEST = python ./tools/linux/Makefile.py --test
 	endif
 endif
 
